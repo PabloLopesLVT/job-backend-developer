@@ -50,6 +50,11 @@ class ProductImport extends Command
 
         $importedProduct =  Http::get('https://fakestoreapi.com/products/'.$productId)->json();
 
+        if (!$importedProduct) {
+            $this->error('Product not found on external API');
+            return 1;
+        }
+
         try {
             Product::create(
                 [
@@ -60,8 +65,6 @@ class ProductImport extends Command
                     'image_url' => $importedProduct['image'],
                 ]
             );
-
-
 
             $this->info('Product imported successfully');
             $this->info('Product ID: ' .$importedProduct['title']);
