@@ -15,9 +15,23 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
+        $products = Product::query();
 
-        return response()->json($products, 201);
+        $filters = request()->only(['name', 'category', 'image_url']);
+
+        foreach ($filters as $filter => $value) {
+            if ($filter == 'image_url') {
+                if ($value == true) {
+                    $products->whereNotNull($filter);
+                } else {
+                    $products->whereNull($filter);
+                }
+            } else {
+                $products->where($filter, 'like', "%{$value}%");
+            }
+        }
+
+        return $products->paginate(10);
     }
 
     /**
@@ -40,7 +54,7 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($productId)
-    {   
+    {
         $product = Product::find($productId);
         if ($product) {
             return response()->json($product, 201);
@@ -78,6 +92,5 @@ class ProductController extends Controller
         } else {
             return response()->json(['message' => 'Produto não encontrado'], 404);
         }
-   
     }
 }
